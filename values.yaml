@@ -1,0 +1,37 @@
+replicaCount: 3
+
+frontend:
+  image:
+    repository: gobpms-showcase-fe
+    tag: "latest"
+    pullPolicy: IfNotPresent
+
+engine:
+  image:
+    repository: gobpms-engine
+    tag: "latest"
+    pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  rqliteHttpPort: 4001
+  rqliteRaftPort: 4002
+  apiPort: 8082
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 256Mi
+  requests:
+    cpu: 200m
+    memory: 128Mi
+
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 1Gi
+  storageClass: standard
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

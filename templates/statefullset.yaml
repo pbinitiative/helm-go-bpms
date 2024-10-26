@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gobpms-engine
+spec:
+  serviceName: gobpms-engine
+  replicas: {{.Values.replicaCount | int}}
+  selector:
+    matchLabels:
+      app: gobpms-engine
+  template:
+    metadata:
+      labels:
+        app: gobpms-engine
+    spec:
+      containers:
+        - name: gobpms-engine
+          image: "{{ .Values.engine.image.repository }}:{{ .Values.engine.image.tag }}"
+          imagePullPolicy: {{.Values.engine.image.pullPolicy}}
+          ports:
+            - containerPort: {{.Values.service.rqliteHttpPort}}
+              name: http
+            - containerPort: {{.Values.service.rqliteRaftPort}}
+              name: raft
+            - containerPort: {{.Values.service.apiPort}}
+              name: api
+          volumeMounts:
+            - name: data
+              mountPath: /gobpms/data
+          env:
+            - name: RQLITE_HTTP_ADDR
+              value: "0.0.0.0:{{.Values.service.rqliteHttpPort}}"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: RQLITE_JOIN
+              value: "{{- $rqliteRaftPort := .Values.service.rqliteRaftPort | int }}{{- range $index, $replica := until (.Values.replicaCount | int) }}gobpms-engine-{{ $index }}.gobpms-engine.default.svc.cluster.local:{{ $rqliteRaftPort }},{{- end }}"
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -x
+              export RQLITE_NODE_ID=$(echo ${POD_NAME} | sed 's/[^0-9]*//g');
+              export RQLITE_JOIN=$(echo ${RQLITE_JOIN} | sed 's/.$//');
+              export RQLITE_HTTP_ADDR=gobpms-engine-${RQLITE_NODE_ID}.gobpms-engine.default.svc.cluster.local:{{.Values.service.rqliteHttpPort}}
+              export RQLITE_RAFT_ADDR=gobpms-engine-${RQLITE_NODE_ID}.gobpms-engine.default.svc.cluster.local:{{.Values.service.rqliteRaftPort}}
+              exec ./go-bpms-bin -port 8082 -node-id ${RQLITE_NODE_ID} -join ${RQLITE_JOIN} -http-addr=${RQLITE_HTTP_ADDR} -raft-addr=${RQLITE_RAFT_ADDR} -bootstrap-expect {{.Values.replicaCount}} -path /gobpms/data;
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: gobpms-data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["{{ .Values.persistence.accessMode }}"]
+        resources:
+          requests:
+            storage: "{{ .Values.persistence.size }}"
+        storageClassName: "{{ .Values.persistence.storageClass }}"

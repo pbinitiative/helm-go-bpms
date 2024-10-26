@@ -1,0 +1,40 @@
+# prettier-ignore
+apiVersion: v1
+kind: Service
+metadata:
+  name: gobpms-engine
+  labels:
+    app: gobpms-engine
+spec:
+  ports:
+    - port: {{ .Values.service.rqliteHttpPort }}
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: {{ .Values.service.apiPort }}
+      targetPort: api
+      protocol: TCP
+      name: api
+    - port: {{.Values.service.rqliteRaftPort}}
+      targetPort: raft
+      protocol: TCP
+      name: raft
+    
+  selector:
+    app: gobpms-engine
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gobpms-showcase-fe
+  labels:
+    app: gobpms-showcase-fe
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+  selector:
+    app: gobpms-showcase-fe
