@@ -1,6 +1,6 @@
 apiVersion: v2
-name: gobpm-cluster
-description: A Helm chart for running gobpm in a clustered configuration
+name: gobpms-cluster
+description: A Helm chart for running gobpms in a clustered configuration
 type: application
 version: 0.0.1
 appVersion: "0.0.1"
