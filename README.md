@@ -8,7 +8,8 @@ curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-
 sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
 
 # start minikube
-minikube start -driver=docker
+minikube start --driver=docker
+minikube addons enable ingress
 
 # install helm
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 && chmod 700 get_helm.sh && ./get_helm.sh

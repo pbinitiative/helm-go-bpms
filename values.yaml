@@ -7,14 +7,15 @@ frontend:
     pullPolicy: IfNotPresent
 
 engine:
+  partitions: 3
   image:
     repository: gobpms-engine
-    tag: "latest"
+    tag: "0.0.31"
     pullPolicy: IfNotPresent
 
 service:
   type: ClusterIP
-  rqliteHttpPort: 4001
+  rqliteHttpPort: 5001
   rqliteRaftPort: 4002
   apiPort: 8082
 

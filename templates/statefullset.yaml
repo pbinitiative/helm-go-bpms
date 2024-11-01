@@ -45,7 +45,7 @@ spec:
               export RQLITE_JOIN=$(echo ${RQLITE_JOIN} | sed 's/.$//');
               export RQLITE_HTTP_ADDR=gobpms-engine-${RQLITE_NODE_ID}.gobpms-engine.default.svc.cluster.local:{{.Values.service.rqliteHttpPort}}
               export RQLITE_RAFT_ADDR=gobpms-engine-${RQLITE_NODE_ID}.gobpms-engine.default.svc.cluster.local:{{.Values.service.rqliteRaftPort}}
-              exec ./go-bpms-bin -port 8082 -node-id ${RQLITE_NODE_ID} -join ${RQLITE_JOIN} -http-addr=${RQLITE_HTTP_ADDR} -raft-addr=${RQLITE_RAFT_ADDR} -bootstrap-expect {{.Values.replicaCount}} -path /gobpms/data;
+              ./dlv --listen=:40000  --headless=true --log=true --log-output=debugger,debuglineerr,gdbwire,lldbout,rpc --continue --accept-multiclient exec ./go-bpms-bin -- -port 8082 -node-id ${RQLITE_NODE_ID} -join ${RQLITE_JOIN} -http-addr=${RQLITE_HTTP_ADDR} -raft-addr=${RQLITE_RAFT_ADDR} -bootstrap-expect {{.Values.replicaCount}} -partitions {{.Values.engine.partitions}} -path /gobpms/data;
       volumes:
         - name: data
           persistentVolumeClaim:
